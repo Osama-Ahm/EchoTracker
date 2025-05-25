@@ -504,6 +504,35 @@
                                 </a>
                             </li>
 
+                            <!-- Community Dropdown -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-people me-1"></i>Community
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{{ route('community.index') }}">
+                                        <i class="bi bi-house me-2"></i>Community Hub
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ route('forums.index') }}">
+                                        <i class="bi bi-chat-dots me-2"></i>Forums
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('community.events.index') }}">
+                                        <i class="bi bi-calendar-event me-2"></i>Events
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('community.volunteer.index') }}">
+                                        <i class="bi bi-heart me-2"></i>Volunteer
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ route('community.leaderboard') }}">
+                                        <i class="bi bi-trophy me-2"></i>Leaderboard
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('community.badges') }}">
+                                        <i class="bi bi-award me-2"></i>Badges
+                                    </a></li>
+                                </ul>
+                            </li>
+
                         @endauth
                     </ul>
 

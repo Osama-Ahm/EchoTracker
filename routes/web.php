@@ -4,6 +4,10 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\CommunityController;
+use App\Http\Controllers\CommunityEventController;
+use App\Http\Controllers\VolunteerController;
+use App\Http\Controllers\ForumController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +44,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/incidents/{incident}/evidence', [App\Http\Controllers\IncidentEvidenceController::class, 'store'])->name('incidents.evidence.store');
     Route::delete('/evidence/{evidence}', [App\Http\Controllers\IncidentEvidenceController::class, 'destroy'])->name('evidence.destroy');
 
+    // Analytics routes
+    Route::get('/analytics', [App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/analytics/export', [App\Http\Controllers\AnalyticsController::class, 'exportReport'])->name('analytics.export');
+
     // Profile routes
     Route::get('/profile', [UserProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [UserProfileController::class, 'edit'])->name('profile.edit');
@@ -56,5 +64,74 @@ Route::middleware('auth')->group(function () {
         Route::patch('/incidents/{incident}/status', [AdminDashboardController::class, 'updateIncidentStatus'])->name('incidents.update-status');
         Route::delete('/incidents/{incident}', [AdminDashboardController::class, 'deleteIncident'])->name('incidents.delete');
         Route::patch('/users/{user}/role', [AdminDashboardController::class, 'updateUserRole'])->name('users.update-role');
+        Route::get('/export', [AdminDashboardController::class, 'exportReport'])->name('export');
+    });
+
+    // Community engagement routes
+    Route::prefix('community')->name('community.')->group(function () {
+        Route::get('/', [CommunityController::class, 'index'])->name('index');
+        Route::get('/leaderboard', [CommunityController::class, 'leaderboard'])->name('leaderboard');
+        Route::get('/badges', [CommunityController::class, 'badges'])->name('badges');
+        Route::get('/profile/{user?}', [CommunityController::class, 'profile'])->name('profile');
+        Route::get('/points-history', [CommunityController::class, 'pointsHistory'])->name('points-history');
+        Route::get('/search', [CommunityController::class, 'search'])->name('search');
+        Route::get('/notifications', [CommunityController::class, 'notifications'])->name('notifications');
+
+        // Events
+        Route::prefix('events')->name('events.')->group(function () {
+            Route::get('/', [CommunityEventController::class, 'index'])->name('index');
+            Route::get('/create', [CommunityEventController::class, 'create'])->name('create');
+            Route::post('/', [CommunityEventController::class, 'store'])->name('store');
+            Route::get('/my-events', [CommunityEventController::class, 'myEvents'])->name('my-events');
+            Route::get('/{event}', [CommunityEventController::class, 'show'])->name('show');
+            Route::get('/{event}/edit', [CommunityEventController::class, 'edit'])->name('edit');
+            Route::put('/{event}', [CommunityEventController::class, 'update'])->name('update');
+            Route::delete('/{event}', [CommunityEventController::class, 'destroy'])->name('destroy');
+            Route::post('/{event}/rsvp', [CommunityEventController::class, 'rsvp'])->name('rsvp');
+            Route::delete('/{event}/rsvp', [CommunityEventController::class, 'cancelRsvp'])->name('cancel-rsvp');
+            Route::patch('/{event}/status', [CommunityEventController::class, 'updateStatus'])->name('update-status');
+            Route::post('/{event}/attendance', [CommunityEventController::class, 'markAttendance'])->name('mark-attendance');
+        });
+
+        // Volunteer opportunities
+        Route::prefix('volunteer')->name('volunteer.')->group(function () {
+            Route::get('/', [VolunteerController::class, 'index'])->name('index');
+            Route::get('/create', [VolunteerController::class, 'create'])->name('create');
+            Route::post('/', [VolunteerController::class, 'store'])->name('store');
+            Route::get('/my-applications', [VolunteerController::class, 'myApplications'])->name('my-applications');
+            Route::get('/my-opportunities', [VolunteerController::class, 'myOpportunities'])->name('my-opportunities');
+            Route::get('/{opportunity}', [VolunteerController::class, 'show'])->name('show');
+            Route::get('/{opportunity}/edit', [VolunteerController::class, 'edit'])->name('edit');
+            Route::put('/{opportunity}', [VolunteerController::class, 'update'])->name('update');
+            Route::delete('/{opportunity}', [VolunteerController::class, 'destroy'])->name('destroy');
+            Route::post('/{opportunity}/apply', [VolunteerController::class, 'apply'])->name('apply');
+            Route::delete('/{opportunity}/apply', [VolunteerController::class, 'withdrawApplication'])->name('withdraw');
+            Route::get('/{opportunity}/applications', [VolunteerController::class, 'manageApplications'])->name('manage-applications');
+            Route::patch('/applications/{application}', [VolunteerController::class, 'updateApplicationStatus'])->name('update-application');
+        });
+    });
+
+    // Forum routes
+    Route::prefix('forums')->name('forums.')->group(function () {
+        Route::get('/', [ForumController::class, 'index'])->name('index');
+        Route::get('/{forum}', [ForumController::class, 'show'])->name('show');
+        Route::get('/{forum}/create-topic', [ForumController::class, 'createTopic'])->name('create-topic');
+        Route::post('/{forum}/topics', [ForumController::class, 'storeTopic'])->name('store-topic');
+
+        Route::prefix('topics')->name('topics.')->group(function () {
+            Route::get('/{topic}', [ForumController::class, 'showTopic'])->name('show');
+            Route::post('/{topic}/reply', [ForumController::class, 'replyToTopic'])->name('reply');
+            Route::get('/{topic}/edit', [ForumController::class, 'editTopic'])->name('edit');
+            Route::put('/{topic}', [ForumController::class, 'updateTopic'])->name('update');
+            Route::delete('/{topic}', [ForumController::class, 'deleteTopic'])->name('delete');
+            Route::patch('/{topic}/pin', [ForumController::class, 'pinTopic'])->name('pin');
+            Route::patch('/{topic}/lock', [ForumController::class, 'lockTopic'])->name('lock');
+        });
+
+        Route::prefix('replies')->name('replies.')->group(function () {
+            Route::get('/{reply}/edit', [ForumController::class, 'editReply'])->name('edit');
+            Route::put('/{reply}', [ForumController::class, 'updateReply'])->name('update');
+            Route::delete('/{reply}', [ForumController::class, 'deleteReply'])->name('delete');
+        });
     });
 });

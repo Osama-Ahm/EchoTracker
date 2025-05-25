@@ -38,6 +38,37 @@ class Incident extends Model
         'display_name',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($incident) {
+            $incident->status = 'reported';
+        });
+
+        static::created(function ($incident) {
+            // Award points for reporting an incident
+            UserPoint::awardPoints(
+                $incident->user_id,
+                'incident_report',
+                $incident,
+                'Reported environmental incident: ' . $incident->title
+            );
+        });
+
+        static::updated(function ($incident) {
+            // Award points when incident is resolved
+            if ($incident->wasChanged('status') && $incident->status === 'resolved') {
+                UserPoint::awardPoints(
+                    $incident->user_id,
+                    'incident_resolved',
+                    $incident,
+                    'Incident was resolved: ' . $incident->title
+                );
+            }
+        });
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(IncidentCategory::class, 'category_id');

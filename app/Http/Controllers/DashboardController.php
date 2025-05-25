@@ -44,12 +44,36 @@ class DashboardController extends Controller
                 return [$item->category->name => $item->count];
             });
 
+        // Get gamification stats
+        $gamificationStats = [
+            'total_points' => $user->total_points,
+            'rank' => $user->rank,
+            'badges_count' => $user->badges()->count(),
+            'recent_badges' => $user->recent_badges,
+        ];
+
+        // Get recent community activity
+        $recentForumTopics = \App\Models\ForumTopic::with(['forum', 'user'])
+            ->orderBy('last_activity_at', 'desc')
+            ->limit(3)
+            ->get();
+
+        $upcomingEvents = \App\Models\CommunityEvent::with('organizer')
+            ->where('status', 'upcoming')
+            ->where('start_date', '>', now())
+            ->orderBy('start_date')
+            ->limit(3)
+            ->get();
+
         return view('dashboard.index', compact(
             'totalIncidents',
             'myIncidents',
             'recentIncidents',
             'statusStats',
-            'categoryStats'
+            'categoryStats',
+            'gamificationStats',
+            'recentForumTopics',
+            'upcomingEvents'
         ));
     }
 }
