@@ -20,7 +20,7 @@
                             </div>
                             <h1 class="text-eco-primary mb-2">{{ $incident->title }}</h1>
                             <div class="d-flex align-items-center text-muted">
-                                <i class="{{ $incident->category->icon ?? 'bi-tag' }} me-2" 
+                                <i class="{{ $incident->category->icon ?? 'bi-tag' }} me-2"
                                    style="color: {{ $incident->category->color }}"></i>
                                 <span class="me-3">{{ $incident->category->name }}</span>
                                 <i class="bi bi-calendar me-1"></i>
@@ -32,7 +32,7 @@
                         @auth
                             @if(Auth::id() === $incident->user_id || Auth::user()->role === 'admin')
                                 <div class="dropdown">
-                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" 
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
                                             data-bs-toggle="dropdown">
                                         <i class="bi bi-three-dots"></i>
                                     </button>
@@ -44,7 +44,7 @@
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
-                                            <form action="{{ route('incidents.destroy', $incident) }}" method="POST" 
+                                            <form action="{{ route('incidents.destroy', $incident) }}" method="POST"
                                                   onsubmit="return confirm('Are you sure you want to delete this incident?')">
                                                 @csrf
                                                 @method('DELETE')
@@ -74,11 +74,11 @@
                             @foreach($incident->photos as $photo)
                                 <div class="col-md-6 mb-3">
                                     <div class="position-relative">
-                                        <img src="{{ Storage::url($photo->path) }}" 
-                                             class="img-fluid rounded shadow-sm" 
+                                        <img src="{{ Storage::url($photo->path) }}"
+                                             class="img-fluid rounded shadow-sm"
                                              alt="{{ $photo->original_name }}"
                                              style="width: 100%; height: 250px; object-fit: cover; cursor: pointer;"
-                                             data-bs-toggle="modal" 
+                                             data-bs-toggle="modal"
                                              data-bs-target="#photoModal{{ $photo->id }}">
                                         @if($photo->caption)
                                             <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 text-white p-2 rounded-bottom">
@@ -97,7 +97,7 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body text-center">
-                                                <img src="{{ Storage::url($photo->path) }}" 
+                                                <img src="{{ Storage::url($photo->path) }}"
                                                      class="img-fluid" alt="{{ $photo->original_name }}">
                                                 @if($photo->caption)
                                                     <p class="mt-3 text-muted">{{ $photo->caption }}</p>
@@ -159,55 +159,29 @@
                             </a>
                         @endauth
                         @if($incident->latitude && $incident->longitude)
-                            <a href="{{ route('incidents.map') }}?lat={{ $incident->latitude }}&lng={{ $incident->longitude }}" 
+                            <a href="{{ route('incidents.map') }}?lat={{ $incident->latitude }}&lng={{ $incident->longitude }}"
                                class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-geo-alt me-2"></i>View on Map
                             </a>
                         @endif
+
+                        @auth
+                            <button type="button" class="btn btn-outline-eco-primary btn-sm" onclick="openEvidenceModal()">
+                                <i class="bi bi-people me-2"></i>Add Evidence
+                            </button>
+
+                            <button type="button" class="btn btn-outline-info btn-sm" onclick="viewCommunityEvidence()">
+                                <i class="bi bi-eye me-2"></i>View Evidence
+                                @if($incident->evidence_count > 0)
+                                    <span class="badge bg-success ms-1">{{ $incident->evidence_count }}</span>
+                                @endif
+                            </button>
+                        @endauth
                     </div>
                 </div>
             </div>
 
-            <!-- Location Info -->
-            @if($incident->address || $incident->latitude)
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h6 class="mb-0">
-                            <i class="bi bi-geo-alt me-2"></i>Location
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        @if($incident->address)
-                            <p class="mb-2">
-                                <i class="bi bi-house me-2"></i>
-                                {{ $incident->address }}
-                                @if($incident->city), {{ $incident->city }}@endif
-                                @if($incident->state), {{ $incident->state }}@endif
-                                @if($incident->postal_code) {{ $incident->postal_code }}@endif
-                            </p>
-                        @endif
-                        
-                        @if($incident->latitude && $incident->longitude)
-                            <p class="mb-0 text-muted small">
-                                <i class="bi bi-crosshair me-2"></i>
-                                {{ number_format($incident->latitude, 6) }}, {{ number_format($incident->longitude, 6) }}
-                            </p>
-                            
-                            <!-- Simple map placeholder -->
-                            <div class="mt-3">
-                                <div id="miniMap" style="height: 200px; background: #f8f9fa; border-radius: 8px; position: relative;">
-                                    <div class="d-flex align-items-center justify-content-center h-100">
-                                        <div class="text-center">
-                                            <i class="bi bi-geo-alt-fill text-eco-primary" style="font-size: 2rem;"></i>
-                                            <p class="text-muted mb-0 small">Location Marker</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            @endif
+
 
             <!-- Incident Details -->
             <div class="card mb-4">
@@ -233,7 +207,7 @@
                         <div class="col-6">
                             <small class="text-muted d-block">Category</small>
                             <div class="d-flex align-items-center">
-                                <i class="{{ $incident->category->icon ?? 'bi-tag' }} me-1" 
+                                <i class="{{ $incident->category->icon ?? 'bi-tag' }} me-1"
                                    style="color: {{ $incident->category->color }}"></i>
                                 <small>{{ $incident->category->name }}</small>
                             </div>
@@ -268,7 +242,7 @@
                     </div>
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="bg-eco-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                            <div class="bg-eco-primary rounded-circle d-flex align-items-center justify-content-center me-3"
                                  style="width: 40px; height: 40px;">
                                 <i class="bi bi-person-fill text-white"></i>
                             </div>
@@ -296,4 +270,210 @@
     color: white;
 }
 </style>
+
+<script>
+const incidentId = {{ $incident->id }};
+
+function openEvidenceModal() {
+    Swal.fire({
+        title: 'Add Supporting Evidence',
+        html: `
+            <div class="text-start">
+                <div class="mb-3">
+                    <label class="form-label">Evidence Type</label>
+                    <select class="form-select" id="evidenceType" onchange="toggleEvidenceFields()">
+                        <option value="comment">Comment</option>
+                        <option value="photo">Photo</option>
+                    </select>
+                </div>
+
+                <div id="commentField" class="mb-3">
+                    <label class="form-label">Your Comment</label>
+                    <textarea class="form-control" id="evidenceComment" rows="4"
+                              placeholder="Share additional information about this incident..."></textarea>
+                </div>
+
+                <div id="photoField" class="mb-3" style="display: none;">
+                    <label class="form-label">Upload Photo</label>
+                    <input type="file" class="form-control" id="evidencePhoto" accept="image/*">
+                    <div class="form-text">Max file size: 5MB. Supported formats: JPG, PNG, GIF</div>
+
+                    <div class="mt-2">
+                        <label class="form-label">Photo Description (Optional)</label>
+                        <input type="text" class="form-control" id="photoDescription"
+                               placeholder="Describe what this photo shows...">
+                    </div>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Submit Evidence',
+        cancelButtonText: 'Cancel',
+        width: '600px',
+        preConfirm: () => {
+            const type = document.getElementById('evidenceType').value;
+            const comment = document.getElementById('evidenceComment').value;
+            const photo = document.getElementById('evidencePhoto').files[0];
+            const photoDescription = document.getElementById('photoDescription').value;
+
+            if (type === 'comment' && !comment.trim()) {
+                Swal.showValidationMessage('Please enter a comment');
+                return false;
+            }
+
+            if (type === 'photo' && !photo) {
+                Swal.showValidationMessage('Please select a photo');
+                return false;
+            }
+
+            return { type, comment, photo, photoDescription };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            submitEvidence(result.value);
+        }
+    });
+}
+
+function toggleEvidenceFields() {
+    const type = document.getElementById('evidenceType').value;
+    const commentField = document.getElementById('commentField');
+    const photoField = document.getElementById('photoField');
+
+    if (type === 'comment') {
+        commentField.style.display = 'block';
+        photoField.style.display = 'none';
+    } else {
+        commentField.style.display = 'none';
+        photoField.style.display = 'block';
+    }
+}
+
+function submitEvidence(data) {
+    const formData = new FormData();
+    formData.append('type', data.type);
+
+    if (data.type === 'comment') {
+        formData.append('content', data.comment);
+    } else {
+        formData.append('photo', data.photo);
+        formData.append('photo_description', data.photoDescription);
+    }
+
+    // Show loading
+    Swal.fire({
+        title: 'Submitting Evidence...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    fetch(`/incidents/${incidentId}/evidence`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Evidence Submitted!',
+                text: data.message,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        } else {
+            throw new Error(data.message || 'Failed to submit evidence');
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Failed to submit evidence. Please try again.'
+        });
+    });
+}
+
+function viewCommunityEvidence() {
+    // Show loading
+    Swal.fire({
+        title: 'Loading Evidence...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    fetch(`/incidents/${incidentId}/evidence`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayEvidenceModal(data.evidence);
+        } else {
+            throw new Error('Failed to load evidence');
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to load evidence. Please try again.'
+        });
+    });
+}
+
+function displayEvidenceModal(evidence) {
+    let evidenceHtml = '';
+
+    if (evidence.length === 0) {
+        evidenceHtml = '<p class="text-muted text-center">No community evidence has been submitted yet.</p>';
+    } else {
+        evidenceHtml = evidence.map(item => {
+            if (item.type === 'comment') {
+                return `
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <strong class="text-eco-primary">${item.user_name}</strong>
+                            <small class="text-muted">${item.created_at}</small>
+                        </div>
+                        <p class="mb-0">${item.content}</p>
+                        ${item.is_verified ? '<span class="badge bg-success mt-2">Verified</span>' : ''}
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <strong class="text-eco-primary">${item.user_name}</strong>
+                            <small class="text-muted">${item.created_at}</small>
+                        </div>
+                        <div class="mb-2">
+                            <img src="${item.file_url}" class="img-fluid rounded" style="max-height: 200px;" alt="Evidence photo">
+                        </div>
+                        ${item.content ? `<p class="mb-1">${item.content}</p>` : ''}
+                        <small class="text-muted">${item.file_name} (${item.formatted_file_size})</small>
+                        ${item.is_verified ? '<br><span class="badge bg-success mt-2">Verified</span>' : ''}
+                    </div>
+                `;
+            }
+        }).join('');
+    }
+
+    Swal.fire({
+        title: 'Community Evidence',
+        html: `
+            <div class="text-start" style="max-height: 400px; overflow-y: auto;">
+                ${evidenceHtml}
+            </div>
+        `,
+        width: '700px',
+        confirmButtonText: 'Close'
+    });
+}
+</script>
 @endsection

@@ -34,6 +34,10 @@ class Incident extends Model
         'resolved_at' => 'datetime',
     ];
 
+    protected $appends = [
+        'display_name',
+    ];
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(IncidentCategory::class, 'category_id');
@@ -52,6 +56,21 @@ class Incident extends Model
     public function photos(): HasMany
     {
         return $this->hasMany(IncidentPhoto::class)->orderBy('sort_order');
+    }
+
+    public function evidence(): HasMany
+    {
+        return $this->hasMany(IncidentEvidence::class)->orderBy('created_at', 'desc');
+    }
+
+    public function evidenceComments(): HasMany
+    {
+        return $this->hasMany(IncidentEvidence::class)->where('type', 'comment')->orderBy('created_at', 'desc');
+    }
+
+    public function evidencePhotos(): HasMany
+    {
+        return $this->hasMany(IncidentEvidence::class)->where('type', 'photo')->orderBy('created_at', 'desc');
     }
 
     public function statusHistory()

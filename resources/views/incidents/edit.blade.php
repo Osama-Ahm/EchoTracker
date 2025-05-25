@@ -33,8 +33,8 @@
                         <div class="row mb-3">
                             <div class="col-md-8">
                                 <label for="title" class="form-label">Issue Title <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('title') is-invalid @enderror" 
-                                       id="title" name="title" value="{{ old('title', $incident->title) }}" 
+                                <input type="text" class="form-control @error('title') is-invalid @enderror"
+                                       id="title" name="title" value="{{ old('title', $incident->title) }}"
                                        placeholder="Brief description of the environmental issue" required>
                                 @error('title')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -60,7 +60,7 @@
                             <select class="form-select @error('category_id') is-invalid @enderror" id="category_id" name="category_id" required>
                                 <option value="">Select Category</option>
                                 @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" 
+                                    <option value="{{ $category->id }}"
                                             {{ old('category_id', $incident->category_id) == $category->id ? 'selected' : '' }}>
                                         {{ $category->name }}
                                     </option>
@@ -73,8 +73,8 @@
 
                         <div class="mb-4">
                             <label for="description" class="form-label">Detailed Description <span class="text-danger">*</span></label>
-                            <textarea class="form-control @error('description') is-invalid @enderror" 
-                                      id="description" name="description" rows="4" 
+                            <textarea class="form-control @error('description') is-invalid @enderror"
+                                      id="description" name="description" rows="4"
                                       placeholder="Provide detailed information about the environmental issue..." required>{{ old('description', $incident->description) }}</textarea>
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -91,10 +91,14 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="address" class="form-label">Address</label>
-                            <input type="text" class="form-control @error('address') is-invalid @enderror" 
-                                   id="address" name="address" value="{{ old('address', $incident->address) }}" 
-                                   placeholder="Street address or nearest landmark">
+                            <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('address') is-invalid @enderror"
+                                   id="address" name="address" value="{{ old('address', $incident->address) }}"
+                                   placeholder="Enter the full address of the incident location" required>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Please provide the complete address. Location is required for all reports.
+                            </div>
                             @error('address')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -103,7 +107,7 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="city" class="form-label">City</label>
-                                <input type="text" class="form-control @error('city') is-invalid @enderror" 
+                                <input type="text" class="form-control @error('city') is-invalid @enderror"
                                        id="city" name="city" value="{{ old('city', $incident->city) }}" placeholder="City">
                                 @error('city')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -111,7 +115,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="state" class="form-label">State/Province</label>
-                                <input type="text" class="form-control @error('state') is-invalid @enderror" 
+                                <input type="text" class="form-control @error('state') is-invalid @enderror"
                                        id="state" name="state" value="{{ old('state', $incident->state) }}" placeholder="State or Province">
                                 @error('state')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -119,7 +123,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="postal_code" class="form-label">Postal Code</label>
-                                <input type="text" class="form-control @error('postal_code') is-invalid @enderror" 
+                                <input type="text" class="form-control @error('postal_code') is-invalid @enderror"
                                        id="postal_code" name="postal_code" value="{{ old('postal_code', $incident->postal_code) }}" placeholder="Postal Code">
                                 @error('postal_code')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -129,19 +133,27 @@
 
                         <div class="row mb-4">
                             <div class="col-md-6">
-                                <label for="latitude" class="form-label">Latitude</label>
-                                <input type="number" step="any" class="form-control @error('latitude') is-invalid @enderror" 
-                                       id="latitude" name="latitude" value="{{ old('latitude', $incident->latitude) }}" 
-                                       placeholder="e.g., 40.7128" readonly>
+                                <label for="latitude" class="form-label">Latitude <span class="text-danger">*</span></label>
+                                <input type="number" step="any" class="form-control @error('latitude') is-invalid @enderror"
+                                       id="latitude" name="latitude" value="{{ old('latitude', $incident->latitude) }}"
+                                       placeholder="e.g., 40.7128" required>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Enter manually or use "Update Current Location" button
+                                </div>
                                 @error('latitude')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-6">
-                                <label for="longitude" class="form-label">Longitude</label>
-                                <input type="number" step="any" class="form-control @error('longitude') is-invalid @enderror" 
-                                       id="longitude" name="longitude" value="{{ old('longitude', $incident->longitude) }}" 
-                                       placeholder="e.g., -74.0060" readonly>
+                                <label for="longitude" class="form-label">Longitude <span class="text-danger">*</span></label>
+                                <input type="number" step="any" class="form-control @error('longitude') is-invalid @enderror"
+                                       id="longitude" name="longitude" value="{{ old('longitude', $incident->longitude) }}"
+                                       placeholder="e.g., -74.0060" required>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Address will auto-fill when coordinates change
+                                </div>
                                 @error('longitude')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -152,6 +164,29 @@
                             <button type="button" class="btn btn-outline-eco-primary" id="getCurrentLocation">
                                 <i class="bi bi-geo-alt-fill me-2"></i>Update Current Location
                             </button>
+                            <small class="text-muted d-block mt-1">
+                                Click to update coordinates with your current location
+                            </small>
+                        </div>
+
+                        <!-- Interactive Map -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-eco-primary mb-3">
+                                    <i class="bi bi-map me-2"></i>Update Location on Map
+                                </h5>
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body p-0">
+                                        <div id="locationMap" style="height: 400px; border-radius: 15px;"></div>
+                                    </div>
+                                    <div class="card-footer bg-light">
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Click on the map to update the incident location. You can also drag the marker to adjust the position.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Existing Photos -->
@@ -168,8 +203,8 @@
                                 @foreach($incident->photos as $photo)
                                     <div class="col-md-4 mb-3">
                                         <div class="card">
-                                            <img src="{{ Storage::url($photo->path) }}" 
-                                                 class="card-img-top" style="height: 150px; object-fit: cover;" 
+                                            <img src="{{ Storage::url($photo->path) }}"
+                                                 class="card-img-top" style="height: 150px; object-fit: cover;"
                                                  alt="{{ $photo->original_name }}">
                                             <div class="card-body p-2">
                                                 <small class="text-muted">{{ $photo->original_name }}</small>
@@ -191,7 +226,7 @@
 
                         <div class="mb-4">
                             <label for="photos" class="form-label">Upload Additional Photos</label>
-                            <input type="file" class="form-control @error('photos.*') is-invalid @enderror" 
+                            <input type="file" class="form-control @error('photos.*') is-invalid @enderror"
                                    id="photos" name="photos[]" multiple accept="image/*">
                             <div class="form-text">
                                 You can upload additional photos (JPEG, PNG, GIF). Maximum 5MB per file.
@@ -219,22 +254,136 @@
 
 @push('scripts')
 <script>
+let map;
+let marker;
+let isMapInitialized = false;
+
+// Initialize the map
+function initMap() {
+    if (isMapInitialized) return;
+
+    // Get existing coordinates from the incident
+    const existingLat = document.getElementById('latitude').value;
+    const existingLng = document.getElementById('longitude').value;
+
+    // Default center if no coordinates exist
+    const defaultLat = 40.7128;
+    const defaultLng = -74.0060;
+
+    const centerLat = existingLat ? parseFloat(existingLat) : defaultLat;
+    const centerLng = existingLng ? parseFloat(existingLng) : defaultLng;
+
+    // Initialize the map
+    map = L.map('locationMap').setView([centerLat, centerLng], existingLat ? 15 : 13);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Add marker if coordinates exist
+    if (existingLat && existingLng) {
+        marker = L.marker([centerLat, centerLng], {
+            draggable: true
+        }).addTo(map);
+
+        // Handle marker drag
+        marker.on('dragend', function(e) {
+            const position = e.target.getLatLng();
+            updateLocationFromMap(position.lat, position.lng);
+        });
+    }
+
+    // Handle map clicks
+    map.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+
+        // Remove existing marker
+        if (marker) {
+            map.removeLayer(marker);
+        }
+
+        // Add new marker
+        marker = L.marker([lat, lng], {
+            draggable: true
+        }).addTo(map);
+
+        // Handle marker drag
+        marker.on('dragend', function(e) {
+            const position = e.target.getLatLng();
+            updateLocationFromMap(position.lat, position.lng);
+        });
+
+        // Update form fields
+        updateLocationFromMap(lat, lng);
+    });
+
+    isMapInitialized = true;
+}
+
+// Update location fields from map interaction
+function updateLocationFromMap(lat, lng) {
+    document.getElementById('latitude').value = lat.toFixed(6);
+    document.getElementById('longitude').value = lng.toFixed(6);
+
+    // Trigger reverse geocoding
+    reverseGeocode(lat, lng);
+
+    // Show visual feedback
+    showLocationSuccess();
+}
+
+// Initialize map when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Small delay to ensure the map container is ready
+    setTimeout(initMap, 100);
+});
+
 document.getElementById('getCurrentLocation').addEventListener('click', function() {
     if (navigator.geolocation) {
         this.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Getting Location...';
         this.disabled = true;
-        
+
         navigator.geolocation.getCurrentPosition(
             function(position) {
-                document.getElementById('latitude').value = position.coords.latitude;
-                document.getElementById('longitude').value = position.coords.longitude;
-                
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                document.getElementById('latitude').value = lat;
+                document.getElementById('longitude').value = lng;
+
+                // Update map if initialized
+                if (map) {
+                    map.setView([lat, lng], 16); // Zoom in closer for GPS location
+
+                    // Remove existing marker
+                    if (marker) {
+                        map.removeLayer(marker);
+                    }
+
+                    // Add new marker
+                    marker = L.marker([lat, lng], {
+                        draggable: true
+                    }).addTo(map);
+
+                    // Handle marker drag
+                    marker.on('dragend', function(e) {
+                        const position = e.target.getLatLng();
+                        updateLocationFromMap(position.lat, position.lng);
+                    });
+                }
+
+                // Use OpenStreetMap Nominatim for reverse geocoding
+                reverseGeocode(lat, lng);
+
                 // Reset button
                 const btn = document.getElementById('getCurrentLocation');
                 btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Location Updated';
                 btn.classList.remove('btn-outline-eco-primary');
                 btn.classList.add('btn-success');
-                
+
                 setTimeout(() => {
                     btn.innerHTML = '<i class="bi bi-geo-alt-fill me-2"></i>Update Current Location';
                     btn.classList.remove('btn-success');
@@ -243,7 +392,20 @@ document.getElementById('getCurrentLocation').addEventListener('click', function
                 }, 2000);
             },
             function(error) {
-                alert('Error getting location: ' + error.message);
+                let errorMessage = 'Unable to retrieve your location.';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = 'Location access denied by user.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = 'Location information is unavailable.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = 'Location request timed out.';
+                        break;
+                }
+                alert(errorMessage);
+
                 const btn = document.getElementById('getCurrentLocation');
                 btn.innerHTML = '<i class="bi bi-geo-alt-fill me-2"></i>Update Current Location';
                 btn.disabled = false;
@@ -252,6 +414,135 @@ document.getElementById('getCurrentLocation').addEventListener('click', function
     } else {
         alert('Geolocation is not supported by this browser.');
     }
+});
+
+// Function to reverse geocode using OpenStreetMap Nominatim
+function reverseGeocode(lat, lng) {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+
+    fetch(url, {
+        headers: {
+            'User-Agent': 'EcoTracker Environmental Monitoring Platform'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data && data.display_name) {
+            // Set the main address field
+            document.getElementById('address').value = data.display_name;
+
+            // Parse address components if available
+            if (data.address) {
+                const address = data.address;
+
+                // Fill city field
+                const city = address.city || address.town || address.village || address.municipality || '';
+                if (city) {
+                    document.getElementById('city').value = city;
+                }
+
+                // Fill state field
+                const state = address.state || address.province || address.region || '';
+                if (state) {
+                    document.getElementById('state').value = state;
+                }
+
+                // Fill postal code field
+                const postalCode = address.postcode || '';
+                if (postalCode) {
+                    document.getElementById('postal_code').value = postalCode;
+                }
+            }
+
+            // Show success feedback
+            showLocationSuccess();
+        } else {
+            console.warn('No address found for the given coordinates');
+            // Still show success for coordinates even if address lookup fails
+            showLocationSuccess();
+        }
+    })
+    .catch(error => {
+        console.error('Error during reverse geocoding:', error);
+        // Don't show error to user, just log it - coordinates are still set
+        showLocationSuccess();
+    });
+}
+
+function showLocationSuccess() {
+    // Add a temporary success indicator to address field
+    const addressField = document.getElementById('address');
+    const originalClass = addressField.className;
+    addressField.classList.add('is-valid');
+
+    setTimeout(() => {
+        addressField.className = originalClass;
+    }, 3000);
+}
+
+// Add event listeners for manual coordinate entry
+document.addEventListener('DOMContentLoaded', function() {
+    const latField = document.getElementById('latitude');
+    const lngField = document.getElementById('longitude');
+    let geocodeTimeout;
+
+    // Function to handle coordinate changes
+    function handleCoordinateChange() {
+        const lat = parseFloat(latField.value);
+        const lng = parseFloat(lngField.value);
+
+        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            // Update map if initialized
+            if (map) {
+                map.setView([lat, lng], 15);
+
+                // Remove existing marker
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+
+                // Add new marker
+                marker = L.marker([lat, lng], {
+                    draggable: true
+                }).addTo(map);
+
+                // Handle marker drag
+                marker.on('dragend', function(e) {
+                    const position = e.target.getLatLng();
+                    updateLocationFromMap(position.lat, position.lng);
+                });
+            }
+
+            // Clear previous timeout
+            clearTimeout(geocodeTimeout);
+
+            // Set a timeout to avoid too many API calls while user is typing
+            geocodeTimeout = setTimeout(() => {
+                reverseGeocode(lat, lng);
+            }, 1000); // Wait 1 second after user stops typing
+        }
+    }
+
+    // Add event listeners to coordinate fields
+    latField.addEventListener('input', handleCoordinateChange);
+    lngField.addEventListener('input', handleCoordinateChange);
+    latField.addEventListener('change', handleCoordinateChange);
+    lngField.addEventListener('change', handleCoordinateChange);
+
+    // Form validation before submit
+    const form = document.querySelector('form');
+
+    form.addEventListener('submit', function(e) {
+        const lat = document.getElementById('latitude').value;
+        const lng = document.getElementById('longitude').value;
+        const address = document.getElementById('address').value;
+
+        if (!lat || !lng || !address) {
+            e.preventDefault();
+            alert('Location is required. Please provide coordinates and address before submitting.');
+            return false;
+        }
+    });
 });
 </script>
 @endpush

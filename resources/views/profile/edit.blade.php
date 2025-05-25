@@ -32,11 +32,11 @@
                     <form method="POST" action="{{ route('profile.update') }}">
                         @csrf
                         @method('PUT')
-                        
+
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="name" class="form-label">Full Name</label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                <input type="text" class="form-control @error('name') is-invalid @enderror"
                                        id="name" name="name" value="{{ old('name', $user->name) }}" required>
                                 @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -44,7 +44,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                                <input type="email" class="form-control @error('email') is-invalid @enderror"
                                        id="email" name="email" value="{{ old('email', $user->email) }}" required>
                                 @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -55,8 +55,8 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control @error('phone') is-invalid @enderror" 
-                                       id="phone" name="phone" value="{{ old('phone', $user->phone) }}" 
+                                <input type="tel" class="form-control @error('phone') is-invalid @enderror"
+                                       id="phone" name="phone" value="{{ old('phone', $user->phone) }}"
                                        placeholder="+1 (555) 123-4567">
                                 @error('phone')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -64,8 +64,8 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="location" class="form-label">Location</label>
-                                <input type="text" class="form-control @error('location') is-invalid @enderror" 
-                                       id="location" name="location" value="{{ old('location', $user->location) }}" 
+                                <input type="text" class="form-control @error('location') is-invalid @enderror"
+                                       id="location" name="location" value="{{ old('location', $user->location) }}"
                                        placeholder="City, State">
                                 @error('location')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -75,8 +75,8 @@
 
                         <div class="mb-3">
                             <label for="website" class="form-label">Website</label>
-                            <input type="url" class="form-control @error('website') is-invalid @enderror" 
-                                   id="website" name="website" value="{{ old('website', $user->website) }}" 
+                            <input type="url" class="form-control @error('website') is-invalid @enderror"
+                                   id="website" name="website" value="{{ old('website', $user->website) }}"
                                    placeholder="https://example.com">
                             @error('website')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -85,8 +85,8 @@
 
                         <div class="mb-4">
                             <label for="bio" class="form-label">Bio</label>
-                            <textarea class="form-control @error('bio') is-invalid @enderror" 
-                                      id="bio" name="bio" rows="4" 
+                            <textarea class="form-control @error('bio') is-invalid @enderror"
+                                      id="bio" name="bio" rows="4"
                                       placeholder="Tell us about yourself and your environmental interests...">{{ old('bio', $user->bio) }}</textarea>
                             <div class="form-text">Maximum 500 characters</div>
                             @error('bio')
@@ -94,37 +94,7 @@
                             @enderror
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label">Notification Preferences</label>
-                            <div class="form-text mb-2">Choose how you'd like to receive updates about your reports</div>
-                            @php
-                                $preferences = old('notification_preferences', $user->notification_preferences ?? []);
-                            @endphp
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="notification_preferences[]" 
-                                       value="email" id="notif_email" 
-                                       {{ in_array('email', $preferences) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="notif_email">
-                                    <i class="bi bi-envelope me-1"></i>Email notifications
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="notification_preferences[]" 
-                                       value="sms" id="notif_sms"
-                                       {{ in_array('sms', $preferences) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="notif_sms">
-                                    <i class="bi bi-phone me-1"></i>SMS notifications
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="notification_preferences[]" 
-                                       value="push" id="notif_push"
-                                       {{ in_array('push', $preferences) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="notif_push">
-                                    <i class="bi bi-bell me-1"></i>Push notifications
-                                </label>
-                            </div>
-                        </div>
+
 
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-eco-primary">
@@ -152,10 +122,10 @@
                     <form method="POST" action="{{ route('profile.password') }}">
                         @csrf
                         @method('PUT')
-                        
+
                         <div class="mb-3">
                             <label for="current_password" class="form-label">Current Password</label>
-                            <input type="password" class="form-control @error('current_password') is-invalid @enderror" 
+                            <input type="password" class="form-control @error('current_password') is-invalid @enderror"
                                    id="current_password" name="current_password" required>
                             @error('current_password')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -164,7 +134,7 @@
 
                         <div class="mb-3">
                             <label for="password" class="form-label">New Password</label>
-                            <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                            <input type="password" class="form-control @error('password') is-invalid @enderror"
                                    id="password" name="password" required>
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -173,7 +143,7 @@
 
                         <div class="mb-3">
                             <label for="password_confirmation" class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control" 
+                            <input type="password" class="form-control"
                                    id="password_confirmation" name="password_confirmation" required>
                         </div>
 
@@ -199,7 +169,7 @@
                         <a href="{{ route('incidents.my') }}" class="btn btn-outline-secondary btn-sm">
                             <i class="bi bi-file-earmark-text me-2"></i>My Reports
                         </a>
-                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                        <button type="button" class="btn btn-outline-danger btn-sm"
                                 data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
                             <i class="bi bi-trash me-2"></i>Delete Account
                         </button>

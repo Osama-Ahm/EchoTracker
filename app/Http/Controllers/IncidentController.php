@@ -57,7 +57,7 @@ class IncidentController extends Controller
             });
         }
 
-        $incidents = $query->latest()->paginate(12);
+        $incidents = $query->withCount('evidence')->latest()->paginate(12);
         $categories = IncidentCategory::active()->ordered()->get();
 
         return view('incidents.index', compact('incidents', 'categories'));
@@ -81,9 +81,9 @@ class IncidentController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'category_id' => 'required|exists:incident_categories,id',
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
-            'address' => 'nullable|string|max:255',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'address' => 'required|string|max:255',
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|max:100',
             'postal_code' => 'nullable|string|max:20',
@@ -92,7 +92,7 @@ class IncidentController extends Controller
             'photos.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
         ]);
 
-        $validated['user_id'] = $request->boolean('is_anonymous') ? null : Auth::id();
+        $validated['user_id'] = Auth::id(); // Always associate with user for tracking
 
         $incident = Incident::create($validated);
 
@@ -124,6 +124,7 @@ class IncidentController extends Controller
     public function show(Incident $incident)
     {
         $incident->load(['category', 'user', 'photos', 'resolvedBy']);
+        $incident->loadCount('evidence');
         return view('incidents.show', compact('incident'));
     }
 
@@ -148,9 +149,9 @@ class IncidentController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'category_id' => 'required|exists:incident_categories,id',
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
-            'address' => 'nullable|string|max:255',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'address' => 'required|string|max:255',
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|max:100',
             'postal_code' => 'nullable|string|max:20',

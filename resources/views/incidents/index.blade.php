@@ -29,7 +29,7 @@
                     <form method="GET" action="{{ route('incidents.index') }}" class="row g-3">
                         <div class="col-md-3">
                             <label for="search" class="form-label">Search</label>
-                            <input type="text" class="form-control" id="search" name="search" 
+                            <input type="text" class="form-control" id="search" name="search"
                                    value="{{ request('search') }}" placeholder="Search incidents...">
                         </div>
                         <div class="col-md-3">
@@ -37,7 +37,7 @@
                             <select class="form-select" id="category" name="category">
                                 <option value="">All Categories</option>
                                 @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" 
+                                    <option value="{{ $category->id }}"
                                             {{ request('category') == $category->id ? 'selected' : '' }}>
                                         {{ $category->name }}
                                     </option>
@@ -87,11 +87,11 @@
                     <span class="text-muted">{{ $incidents->total() }} incidents found</span>
                 </div>
                 <div class="btn-group" role="group">
-                    <a href="{{ route('incidents.index', request()->query()) }}" 
+                    <a href="{{ route('incidents.index', request()->query()) }}"
                        class="btn btn-outline-secondary active">
                         <i class="bi bi-grid"></i> Grid
                     </a>
-                    <a href="{{ route('incidents.map', request()->query()) }}" 
+                    <a href="{{ route('incidents.map', request()->query()) }}"
                        class="btn btn-outline-secondary">
                         <i class="bi bi-geo-alt"></i> Map
                     </a>
@@ -106,17 +106,17 @@
             <div class="col-lg-4 col-md-6 mb-4">
                 <div class="card h-100">
                     @if($incident->photos->count() > 0)
-                        <img src="{{ Storage::url($incident->photos->first()->path) }}" 
-                             class="card-img-top" style="height: 200px; object-fit: cover;" 
+                        <img src="{{ Storage::url($incident->photos->first()->path) }}"
+                             class="card-img-top" style="height: 200px; object-fit: cover;"
                              alt="{{ $incident->title }}">
                     @else
-                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
                              style="height: 200px;">
-                            <i class="{{ $incident->category->icon ?? 'bi-exclamation-circle' }} text-muted" 
+                            <i class="{{ $incident->category->icon ?? 'bi-exclamation-circle' }} text-muted"
                                style="font-size: 3rem;"></i>
                         </div>
                     @endif
-                    
+
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="badge {{ $incident->status_badge_class }}">
@@ -126,32 +126,39 @@
                                 {{ ucfirst($incident->priority) }}
                             </span>
                         </div>
-                        
+
                         <h5 class="card-title">
-                            <a href="{{ route('incidents.show', $incident) }}" 
+                            <a href="{{ route('incidents.show', $incident) }}"
                                class="text-decoration-none text-dark">
                                 {{ $incident->title }}
                             </a>
                         </h5>
-                        
+
                         <p class="card-text text-muted flex-grow-1">
                             {{ Str::limit($incident->description, 100) }}
                         </p>
-                        
+
                         <div class="mt-auto">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <div class="d-flex align-items-center">
-                                    <i class="{{ $incident->category->icon ?? 'bi-tag' }} me-1" 
+                                    <i class="{{ $incident->category->icon ?? 'bi-tag' }} me-1"
                                        style="color: {{ $incident->category->color }}"></i>
                                     <small class="text-muted">{{ $incident->category->name }}</small>
                                 </div>
-                                @if($incident->photos->count() > 0)
-                                    <small class="text-muted">
-                                        <i class="bi bi-camera"></i> {{ $incident->photos->count() }}
-                                    </small>
-                                @endif
+                                <div class="d-flex gap-2">
+                                    @if($incident->photos->count() > 0)
+                                        <small class="text-muted">
+                                            <i class="bi bi-camera"></i> {{ $incident->photos->count() }}
+                                        </small>
+                                    @endif
+                                    @if($incident->evidence_count > 0)
+                                        <small class="text-success">
+                                            <i class="bi bi-people"></i> {{ $incident->evidence_count }} evidence
+                                        </small>
+                                    @endif
+                                </div>
                             </div>
-                            
+
                             <div class="d-flex align-items-center justify-content-between">
                                 <small class="text-muted">
                                     <i class="bi bi-person"></i> {{ $incident->display_name }}
@@ -160,7 +167,7 @@
                                     {{ $incident->created_at->diffForHumans() }}
                                 </small>
                             </div>
-                            
+
                             @if($incident->address)
                                 <div class="mt-1">
                                     <small class="text-muted">
@@ -170,9 +177,9 @@
                             @endif
                         </div>
                     </div>
-                    
+
                     <div class="card-footer bg-transparent">
-                        <a href="{{ route('incidents.show', $incident) }}" 
+                        <a href="{{ route('incidents.show', $incident) }}"
                            class="btn btn-outline-eco-primary btn-sm w-100">
                             <i class="bi bi-eye"></i> View Details
                         </a>

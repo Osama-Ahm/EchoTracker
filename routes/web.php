@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Route;
 // Landing page for public visitors
 Route::get('/', function () {
     return Auth::check() ? redirect()->route('dashboard') : view('landing');
+})->name('home');
+
+// Dedicated landing page route (always shows landing page)
+Route::get('/landing', function () {
+    return view('landing');
 })->name('landing');
 
 Auth::routes();
@@ -30,6 +35,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-incidents', [IncidentController::class, 'my'])->name('incidents.my');
     Route::get('/map', [IncidentController::class, 'map'])->name('incidents.map');
 
+    // Evidence routes
+    Route::get('/incidents/{incident}/evidence', [App\Http\Controllers\IncidentEvidenceController::class, 'index'])->name('incidents.evidence.index');
+    Route::post('/incidents/{incident}/evidence', [App\Http\Controllers\IncidentEvidenceController::class, 'store'])->name('incidents.evidence.store');
+    Route::delete('/evidence/{evidence}', [App\Http\Controllers\IncidentEvidenceController::class, 'destroy'])->name('evidence.destroy');
+
     // Profile routes
     Route::get('/profile', [UserProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [UserProfileController::class, 'edit'])->name('profile.edit');
@@ -42,6 +52,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/incidents', [AdminDashboardController::class, 'incidents'])->name('incidents');
         Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
+        Route::get('/incidents/{incident}/view', [AdminDashboardController::class, 'viewIncident'])->name('incidents.view');
         Route::patch('/incidents/{incident}/status', [AdminDashboardController::class, 'updateIncidentStatus'])->name('incidents.update-status');
         Route::delete('/incidents/{incident}', [AdminDashboardController::class, 'deleteIncident'])->name('incidents.delete');
         Route::patch('/users/{user}/role', [AdminDashboardController::class, 'updateUserRole'])->name('users.update-role');

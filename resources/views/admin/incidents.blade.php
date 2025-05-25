@@ -179,79 +179,21 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <a href="{{ route('incidents.show', $incident) }}"
-                                                       class="btn btn-outline-primary btn-sm">
+                                                    <button type="button" class="btn btn-outline-primary btn-sm"
+                                                            onclick="viewIncident({{ $incident->id }})"
+                                                            title="View Full Details">
                                                         <i class="bi bi-eye"></i>
-                                                    </a>
-                                                    <button type="button" class="btn btn-outline-secondary btn-sm"
-                                                            data-bs-toggle="modal" data-bs-target="#notesModal{{ $incident->id }}">
-                                                        <i class="bi bi-chat-text"></i>
                                                     </button>
                                                     <button type="button" class="btn btn-outline-danger btn-sm"
-                                                            data-bs-toggle="modal" data-bs-target="#deleteModal{{ $incident->id }}">
+                                                            onclick="confirmDelete({{ $incident->id }}, '{{ addslashes($incident->title) }}')"
+                                                            title="Delete Report">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
 
-                                        <!-- Notes Modal -->
-                                        <div class="modal fade" id="notesModal{{ $incident->id }}" tabindex="-1">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <form method="POST" action="{{ route('admin.incidents.update-status', $incident) }}">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Admin Notes - {{ $incident->title }}</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <input type="hidden" name="status" value="{{ $incident->status }}">
-                                                            <div class="mb-3">
-                                                                <label for="admin_notes" class="form-label">Admin Notes</label>
-                                                                <textarea class="form-control" id="admin_notes" name="admin_notes"
-                                                                          rows="4" placeholder="Add administrative notes...">{{ $incident->admin_notes }}</textarea>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                            <button type="submit" class="btn btn-eco-primary">Save Notes</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <!-- Delete Modal -->
-                                        <div class="modal fade" id="deleteModal{{ $incident->id }}" tabindex="-1">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Delete Incident</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <p>Are you sure you want to delete this incident report?</p>
-                                                        <div class="alert alert-warning">
-                                                            <i class="bi bi-exclamation-triangle me-2"></i>
-                                                            <strong>{{ $incident->title }}</strong><br>
-                                                            This action cannot be undone. All associated photos and data will be permanently deleted.
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                        <form method="POST" action="{{ route('admin.incidents.delete', $incident) }}" class="d-inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger">
-                                                                <i class="bi bi-trash me-2"></i>Delete Permanently
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     @endforeach
                                 </tbody>
                             </table>
@@ -302,4 +244,252 @@
     vertical-align: middle;
 }
 </style>
+
+<script>
+// Function to view incident details
+function viewIncident(incidentId) {
+    // Show loading
+    Swal.fire({
+        title: 'Loading...',
+        text: 'Fetching incident details',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    // Fetch incident details
+    fetch(`/admin/incidents/${incidentId}/view`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showIncidentDetails(data.incident);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to load incident details'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to load incident details'
+            });
+        });
+}
+
+// Function to display incident details in SweetAlert
+function showIncidentDetails(incident) {
+    let locationInfo = '';
+    if (incident.latitude && incident.longitude) {
+        locationInfo = `
+            <div class="mb-3">
+                <strong>📍 Location:</strong><br>
+                ${incident.address || 'Address not provided'}<br>
+                ${incident.city ? incident.city + ', ' : ''}${incident.state || ''} ${incident.postal_code || ''}<br>
+                <small class="text-muted">Coordinates: ${incident.latitude}, ${incident.longitude}</small>
+            </div>
+        `;
+    }
+
+    let userInfo = '';
+    if (incident.is_anonymous) {
+        userInfo = '<div class="mb-3"><strong>👤 Reporter:</strong> Anonymous</div>';
+    } else if (incident.user) {
+        userInfo = `
+            <div class="mb-3">
+                <strong>👤 Reporter:</strong><br>
+                ${incident.user.name}<br>
+                <small class="text-muted">${incident.user.email}</small>
+            </div>
+        `;
+    }
+
+    let photosInfo = '';
+    if (incident.photos && incident.photos.length > 0) {
+        photosInfo = `
+            <div class="mb-3">
+                <strong>📷 Photos (${incident.photos.length}):</strong><br>
+                <div class="row mt-2">
+        `;
+        incident.photos.forEach(photo => {
+            photosInfo += `
+                <div class="col-6 mb-2">
+                    <img src="${photo.url}" class="img-fluid rounded" style="max-height: 100px; object-fit: cover; cursor: pointer;"
+                         onclick="window.open('${photo.url}', '_blank')" title="Click to view full size">
+                    ${photo.caption ? `<small class="d-block text-muted">${photo.caption}</small>` : ''}
+                </div>
+            `;
+        });
+        photosInfo += '</div></div>';
+    }
+
+    let resolvedInfo = '';
+    if (incident.resolved_at && incident.resolved_by) {
+        resolvedInfo = `
+            <div class="mb-3">
+                <strong>✅ Resolved:</strong><br>
+                ${incident.resolved_at}<br>
+                <small class="text-muted">By: ${incident.resolved_by.name}</small>
+            </div>
+        `;
+    }
+
+    let adminNotesInfo = '';
+    if (incident.admin_notes) {
+        adminNotesInfo = `
+            <div class="mb-3">
+                <strong>📝 Admin Notes:</strong><br>
+                <div class="bg-light p-2 rounded">${incident.admin_notes}</div>
+            </div>
+        `;
+    }
+
+    const htmlContent = `
+        <div class="text-start">
+            <div class="mb-3">
+                <span class="badge bg-${getStatusColor(incident.status)} me-2">${incident.status.replace('_', ' ').toUpperCase()}</span>
+                <span class="badge bg-${getPriorityColor(incident.priority)}">${incident.priority.toUpperCase()} PRIORITY</span>
+            </div>
+
+            <div class="mb-3">
+                <strong>📂 Category:</strong>
+                <i class="${incident.category.icon}" style="color: ${incident.category.color}"></i>
+                ${incident.category.name}
+            </div>
+
+            ${userInfo}
+
+            <div class="mb-3">
+                <strong>📝 Description:</strong><br>
+                <div class="bg-light p-2 rounded">${incident.description}</div>
+            </div>
+
+            ${locationInfo}
+            ${photosInfo}
+            ${adminNotesInfo}
+            ${resolvedInfo}
+
+            <div class="mb-3">
+                <strong>📅 Reported:</strong> ${incident.created_at}<br>
+                <strong>🔄 Last Updated:</strong> ${incident.updated_at}
+            </div>
+        </div>
+    `;
+
+    Swal.fire({
+        title: `<i class="${incident.category.icon}" style="color: ${incident.category.color}"></i> ${incident.title}`,
+        html: htmlContent,
+        width: '800px',
+        confirmButtonText: 'Close',
+        confirmButtonColor: '#2d5a27',
+        customClass: {
+            popup: 'text-start'
+        }
+    });
+}
+
+// Function to confirm deletion
+function confirmDelete(incidentId, incidentTitle) {
+    Swal.fire({
+        title: 'Delete Incident Report?',
+        html: `
+            <div class="text-start">
+                <p>Are you sure you want to delete this incident report?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>${incidentTitle}</strong><br>
+                    This action cannot be undone. All associated photos and data will be permanently deleted.
+                </div>
+            </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="bi bi-trash me-2"></i>Delete Permanently',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            deleteIncident(incidentId);
+        }
+    });
+}
+
+// Function to delete incident
+function deleteIncident(incidentId) {
+    // Show loading
+    Swal.fire({
+        title: 'Deleting...',
+        text: 'Please wait while we delete the incident',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    // Delete incident
+    fetch(`/admin/incidents/${incidentId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Deleted!',
+                text: data.message,
+                confirmButtonColor: '#2d5a27'
+            }).then(() => {
+                // Reload the page to refresh the list
+                window.location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to delete incident'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to delete incident'
+        });
+    });
+}
+
+// Helper functions for badge colors
+function getStatusColor(status) {
+    switch(status) {
+        case 'reported': return 'warning';
+        case 'under_review': return 'info';
+        case 'in_progress': return 'primary';
+        case 'resolved': return 'success';
+        case 'closed': return 'secondary';
+        default: return 'secondary';
+    }
+}
+
+function getPriorityColor(priority) {
+    switch(priority) {
+        case 'low': return 'success';
+        case 'medium': return 'warning';
+        case 'high': return 'danger';
+        case 'urgent': return 'dark';
+        default: return 'secondary';
+    }
+}
+</script>
 @endsection

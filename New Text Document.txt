@@ -1,0 +1,1 @@
+listen admin can delete  reports  admin can not edit  just show a popup  using swal   and in delete also show  swal  on view show full report with  location and everything  of the report   and sett the ui  of the button  dropdwon in wchilogout byutton is its hiding at back 

@@ -77,8 +77,6 @@ class UserProfileController extends Controller
             'location' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'website' => 'nullable|url|max:255',
-            'notification_preferences' => 'array',
-            'notification_preferences.*' => 'string|in:email,sms,push',
         ]);
 
         $user->update($validated);

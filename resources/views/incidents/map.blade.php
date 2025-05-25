@@ -82,13 +82,6 @@
                                 <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">
                                     <i class="bi bi-x-circle"></i> Clear
                                 </button>
-                                @auth
-                                    @if(Auth::user()->role !== 'admin')
-                                        <button type="button" class="btn btn-eco-primary btn-sm" onclick="enableReportMode()">
-                                            <i class="bi bi-plus-circle me-1"></i>Report Here
-                                        </button>
-                                    @endif
-                                @endauth
                             </div>
                         </div>
                     </form>
@@ -236,13 +229,21 @@
 let map = L.map('map').setView([40.7128, -74.0060], 10);
 let allIncidents = @json($incidents);
 let markerLayer = L.layerGroup().addTo(map);
-let reportMode = false;
-let reportMarker = null;
+
+// Debug: Log incidents data
+console.log('All incidents:', allIncidents);
+console.log('Number of incidents:', allIncidents.length);
 
 // Add tile layer
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(map);
+
+// Add a test marker to verify map is working
+L.marker([40.7128, -74.0060])
+    .addTo(map)
+    .bindPopup('Test marker - Map is working!')
+    .openPopup();
 
 // Enhanced color mapping for status
 const statusColors = {
@@ -270,11 +271,17 @@ function addIncidentMarkers(incidents) {
     markerLayer.clearLayers();
     let bounds = [];
 
-    incidents.forEach(incident => {
+    console.log('Adding markers for incidents:', incidents.length);
+
+    incidents.forEach((incident, index) => {
+        console.log(`Processing incident ${index + 1}:`, incident);
+
         if (incident.latitude && incident.longitude) {
             const lat = parseFloat(incident.latitude);
             const lng = parseFloat(incident.longitude);
             bounds.push([lat, lng]);
+
+            console.log(`Adding marker at: ${lat}, ${lng}`);
 
             // Get color and size based on status and priority
             const color = statusColors[incident.status] || '#6c757d';
@@ -298,6 +305,13 @@ function addIncidentMarkers(incidents) {
             L.marker([lat, lng], { icon: icon })
                 .addTo(markerLayer)
                 .bindPopup(popupContent);
+        } else {
+            console.log(`Incident ${index + 1} skipped - missing coordinates:`, {
+                id: incident.id,
+                title: incident.title,
+                latitude: incident.latitude,
+                longitude: incident.longitude
+            });
         }
     });
 
@@ -437,72 +451,10 @@ function clearFilters() {
     updateMap();
 }
 
-function enableReportMode() {
-    if (reportMode) {
-        disableReportMode();
-        return;
-    }
 
-    reportMode = true;
-    const btn = document.querySelector('[onclick="enableReportMode()"]');
-    btn.innerHTML = '<i class="bi bi-x-circle me-1"></i>Cancel Report';
-    btn.className = 'btn btn-outline-danger btn-sm';
-
-    // Add click handler to map
-    map.on('click', onMapClick);
-
-    // Show instruction
-    alert('Click on the map where you want to report an incident.');
-}
-
-function disableReportMode() {
-    reportMode = false;
-    const btn = document.querySelector('[onclick="enableReportMode()"]');
-    btn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>Report Here';
-    btn.className = 'btn btn-eco-primary btn-sm';
-
-    // Remove click handler
-    map.off('click', onMapClick);
-
-    // Remove report marker if exists
-    if (reportMarker) {
-        map.removeLayer(reportMarker);
-        reportMarker = null;
-    }
-}
-
-function onMapClick(e) {
-    if (!reportMode) return;
-
-    const lat = e.latlng.lat;
-    const lng = e.latlng.lng;
-
-    // Remove existing report marker
-    if (reportMarker) {
-        map.removeLayer(reportMarker);
-    }
-
-    // Add new report marker
-    reportMarker = L.marker([lat, lng], {
-        icon: L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        })
-    }).addTo(map);
-
-    // Redirect to create incident with coordinates
-    const url = `/incidents/create?lat=${lat}&lng=${lng}`;
-    window.location.href = url;
-}
 
 // Regular map click for non-admin users
 map.on('click', function(e) {
-    if (reportMode) return; // Don't interfere with report mode
-
     @auth
         @if(Auth::user()->role !== 'admin')
             if (confirm('Would you like to report an environmental issue at this location?')) {

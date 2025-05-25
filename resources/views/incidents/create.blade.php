@@ -92,10 +92,14 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="address" class="form-label">Address</label>
+                            <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('address') is-invalid @enderror"
                                    id="address" name="address" value="{{ old('address') }}"
-                                   placeholder="Street address or nearest landmark">
+                                   placeholder="Enter the full address of the incident location" required>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Please provide the complete address. Location is required for all reports.
+                            </div>
                             @error('address')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -130,19 +134,27 @@
 
                         <div class="row mb-4">
                             <div class="col-md-6">
-                                <label for="latitude" class="form-label">Latitude</label>
+                                <label for="latitude" class="form-label">Latitude <span class="text-danger">*</span></label>
                                 <input type="number" step="any" class="form-control @error('latitude') is-invalid @enderror"
                                        id="latitude" name="latitude" value="{{ old('latitude', request('lat')) }}"
-                                       placeholder="e.g., 40.7128" readonly>
+                                       placeholder="e.g., 40.7128" required>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Enter manually or use "Current Location" button
+                                </div>
                                 @error('latitude')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-6">
-                                <label for="longitude" class="form-label">Longitude</label>
+                                <label for="longitude" class="form-label">Longitude <span class="text-danger">*</span></label>
                                 <input type="number" step="any" class="form-control @error('longitude') is-invalid @enderror"
                                        id="longitude" name="longitude" value="{{ old('longitude', request('lng')) }}"
-                                       placeholder="e.g., -74.0060" readonly>
+                                       placeholder="e.g., -74.0060" required>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Address will auto-fill when coordinates change
+                                </div>
                                 @error('longitude')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -156,6 +168,26 @@
                             <small class="text-muted d-block mt-1">
                                 Click to automatically fill coordinates with your current location
                             </small>
+                        </div>
+
+                        <!-- Interactive Map -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-eco-primary mb-3">
+                                    <i class="bi bi-map me-2"></i>Select Location on Map
+                                </h5>
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body p-0">
+                                        <div id="locationMap" style="height: 400px; border-radius: 15px;"></div>
+                                    </div>
+                                    <div class="card-footer bg-light">
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Click on the map to set the incident location. You can also drag the marker to adjust the position.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Photos -->
@@ -219,6 +251,93 @@
 
 @push('scripts')
 <script>
+let map;
+let marker;
+let isMapInitialized = false;
+
+// Initialize the map
+function initMap() {
+    if (isMapInitialized) return;
+
+    // Default center (you can change this to your preferred default location)
+    const defaultLat = 40.7128;
+    const defaultLng = -74.0060;
+
+    // Get existing coordinates if available
+    const existingLat = document.getElementById('latitude').value;
+    const existingLng = document.getElementById('longitude').value;
+
+    const centerLat = existingLat ? parseFloat(existingLat) : defaultLat;
+    const centerLng = existingLng ? parseFloat(existingLng) : defaultLng;
+
+    // Initialize the map
+    map = L.map('locationMap').setView([centerLat, centerLng], 13);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Add marker if coordinates exist
+    if (existingLat && existingLng) {
+        marker = L.marker([centerLat, centerLng], {
+            draggable: true
+        }).addTo(map);
+
+        // Handle marker drag
+        marker.on('dragend', function(e) {
+            const position = e.target.getLatLng();
+            updateLocationFromMap(position.lat, position.lng);
+        });
+    }
+
+    // Handle map clicks
+    map.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+
+        // Remove existing marker
+        if (marker) {
+            map.removeLayer(marker);
+        }
+
+        // Add new marker
+        marker = L.marker([lat, lng], {
+            draggable: true
+        }).addTo(map);
+
+        // Handle marker drag
+        marker.on('dragend', function(e) {
+            const position = e.target.getLatLng();
+            updateLocationFromMap(position.lat, position.lng);
+        });
+
+        // Update form fields
+        updateLocationFromMap(lat, lng);
+    });
+
+    isMapInitialized = true;
+}
+
+// Update location fields from map interaction
+function updateLocationFromMap(lat, lng) {
+    document.getElementById('latitude').value = lat.toFixed(6);
+    document.getElementById('longitude').value = lng.toFixed(6);
+
+    // Trigger reverse geocoding
+    reverseGeocode(lat, lng);
+
+    // Show visual feedback
+    showLocationSuccess();
+}
+
+// Initialize map when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Small delay to ensure the map container is ready
+    setTimeout(initMap, 100);
+});
+
 document.getElementById('getCurrentLocation').addEventListener('click', function() {
     if (navigator.geolocation) {
         this.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Getting Location...';
@@ -226,8 +345,35 @@ document.getElementById('getCurrentLocation').addEventListener('click', function
 
         navigator.geolocation.getCurrentPosition(
             function(position) {
-                document.getElementById('latitude').value = position.coords.latitude;
-                document.getElementById('longitude').value = position.coords.longitude;
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                document.getElementById('latitude').value = lat;
+                document.getElementById('longitude').value = lng;
+
+                // Update map if initialized
+                if (map) {
+                    map.setView([lat, lng], 16); // Zoom in closer for GPS location
+
+                    // Remove existing marker
+                    if (marker) {
+                        map.removeLayer(marker);
+                    }
+
+                    // Add new marker
+                    marker = L.marker([lat, lng], {
+                        draggable: true
+                    }).addTo(map);
+
+                    // Handle marker drag
+                    marker.on('dragend', function(e) {
+                        const position = e.target.getLatLng();
+                        updateLocationFromMap(position.lat, position.lng);
+                    });
+                }
+
+                // Use OpenStreetMap Nominatim for reverse geocoding
+                reverseGeocode(lat, lng);
 
                 // Reset button
                 const btn = document.getElementById('getCurrentLocation');
@@ -243,7 +389,20 @@ document.getElementById('getCurrentLocation').addEventListener('click', function
                 }, 2000);
             },
             function(error) {
-                alert('Error getting location: ' + error.message);
+                let errorMessage = 'Unable to retrieve your location.';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = 'Location access denied by user.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = 'Location information is unavailable.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = 'Location request timed out.';
+                        break;
+                }
+                alert(errorMessage);
+
                 const btn = document.getElementById('getCurrentLocation');
                 btn.innerHTML = '<i class="bi bi-geo-alt-fill me-2"></i>Use Current Location';
                 btn.disabled = false;
@@ -252,6 +411,135 @@ document.getElementById('getCurrentLocation').addEventListener('click', function
     } else {
         alert('Geolocation is not supported by this browser.');
     }
+});
+
+// Function to reverse geocode using OpenStreetMap Nominatim
+function reverseGeocode(lat, lng) {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+
+    fetch(url, {
+        headers: {
+            'User-Agent': 'EcoTracker Environmental Monitoring Platform'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data && data.display_name) {
+            // Set the main address field
+            document.getElementById('address').value = data.display_name;
+
+            // Parse address components if available
+            if (data.address) {
+                const address = data.address;
+
+                // Fill city field
+                const city = address.city || address.town || address.village || address.municipality || '';
+                if (city) {
+                    document.getElementById('city').value = city;
+                }
+
+                // Fill state field
+                const state = address.state || address.province || address.region || '';
+                if (state) {
+                    document.getElementById('state').value = state;
+                }
+
+                // Fill postal code field
+                const postalCode = address.postcode || '';
+                if (postalCode) {
+                    document.getElementById('postal_code').value = postalCode;
+                }
+            }
+
+            // Show success feedback
+            showLocationSuccess();
+        } else {
+            console.warn('No address found for the given coordinates');
+            // Still show success for coordinates even if address lookup fails
+            showLocationSuccess();
+        }
+    })
+    .catch(error => {
+        console.error('Error during reverse geocoding:', error);
+        // Don't show error to user, just log it - coordinates are still set
+        showLocationSuccess();
+    });
+}
+
+function showLocationSuccess() {
+    // Add a temporary success indicator to address field
+    const addressField = document.getElementById('address');
+    const originalClass = addressField.className;
+    addressField.classList.add('is-valid');
+
+    setTimeout(() => {
+        addressField.className = originalClass;
+    }, 3000);
+}
+
+// Add event listeners for manual coordinate entry
+document.addEventListener('DOMContentLoaded', function() {
+    const latField = document.getElementById('latitude');
+    const lngField = document.getElementById('longitude');
+    let geocodeTimeout;
+
+    // Function to handle coordinate changes
+    function handleCoordinateChange() {
+        const lat = parseFloat(latField.value);
+        const lng = parseFloat(lngField.value);
+
+        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            // Update map if initialized
+            if (map) {
+                map.setView([lat, lng], 15);
+
+                // Remove existing marker
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+
+                // Add new marker
+                marker = L.marker([lat, lng], {
+                    draggable: true
+                }).addTo(map);
+
+                // Handle marker drag
+                marker.on('dragend', function(e) {
+                    const position = e.target.getLatLng();
+                    updateLocationFromMap(position.lat, position.lng);
+                });
+            }
+
+            // Clear previous timeout
+            clearTimeout(geocodeTimeout);
+
+            // Set a timeout to avoid too many API calls while user is typing
+            geocodeTimeout = setTimeout(() => {
+                reverseGeocode(lat, lng);
+            }, 1000); // Wait 1 second after user stops typing
+        }
+    }
+
+    // Add event listeners to coordinate fields
+    latField.addEventListener('input', handleCoordinateChange);
+    lngField.addEventListener('input', handleCoordinateChange);
+    latField.addEventListener('change', handleCoordinateChange);
+    lngField.addEventListener('change', handleCoordinateChange);
+
+    // Form validation before submit
+    const form = document.querySelector('form');
+
+    form.addEventListener('submit', function(e) {
+        const lat = document.getElementById('latitude').value;
+        const lng = document.getElementById('longitude').value;
+        const address = document.getElementById('address').value;
+
+        if (!lat || !lng || !address) {
+            e.preventDefault();
+            alert('Location is required. Please provide coordinates and address before submitting.');
+            return false;
+        }
+    });
 });
 
 // Photo preview
