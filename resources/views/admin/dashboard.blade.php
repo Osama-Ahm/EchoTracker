@@ -314,6 +314,9 @@
                         <a href="{{ route('admin.users') }}" class="btn btn-outline-eco-primary">
                             <i class="bi bi-people me-2"></i>Manage Users
                         </a>
+                        <a href="{{ route('admin.evidence') }}" class="btn btn-outline-info">
+                            <i class="bi bi-shield-check me-2"></i>Manage Evidence
+                        </a>
                         <a href="{{ route('incidents.map') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-geo-alt me-2"></i>View Map
                         </a>

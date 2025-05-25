@@ -60,10 +60,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/incidents', [AdminDashboardController::class, 'incidents'])->name('incidents');
         Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
+        Route::get('/evidence', [AdminDashboardController::class, 'evidence'])->name('evidence');
         Route::get('/incidents/{incident}/view', [AdminDashboardController::class, 'viewIncident'])->name('incidents.view');
         Route::patch('/incidents/{incident}/status', [AdminDashboardController::class, 'updateIncidentStatus'])->name('incidents.update-status');
         Route::delete('/incidents/{incident}', [AdminDashboardController::class, 'deleteIncident'])->name('incidents.delete');
         Route::patch('/users/{user}/role', [AdminDashboardController::class, 'updateUserRole'])->name('users.update-role');
+        Route::patch('/evidence/{evidence}/verify', [AdminDashboardController::class, 'verifyEvidence'])->name('evidence.verify');
+        Route::delete('/evidence/{evidence}', [AdminDashboardController::class, 'deleteEvidence'])->name('evidence.delete');
         Route::get('/export', [AdminDashboardController::class, 'exportReport'])->name('export');
     });
 

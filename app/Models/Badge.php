@@ -22,6 +22,17 @@ class Badge extends Model
         'is_active' => 'boolean',
     ];
 
+    // Accessor to ensure criteria is always an array
+    public function getCriteriaAttribute($value)
+    {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return is_array($value) ? $value : [];
+    }
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_badges')->withTimestamps()->withPivot('earned_at');
@@ -33,11 +44,11 @@ class Badge extends Model
         if (!$user) return;
 
         $badges = self::where('is_active', true)->get();
-        
+
         foreach ($badges as $badge) {
             if (!$user->badges->contains($badge->id) && $badge->isEligible($user)) {
                 $user->badges()->attach($badge->id, ['earned_at' => now()]);
-                
+
                 // Optionally send notification about new badge
                 // You can implement notification system here
             }
@@ -47,7 +58,7 @@ class Badge extends Model
     public function isEligible(User $user)
     {
         $totalPoints = $user->points()->sum('points');
-        
+
         // Check points requirement
         if ($this->points_required > 0 && $totalPoints < $this->points_required) {
             return false;
@@ -55,7 +66,12 @@ class Badge extends Model
 
         // Check specific criteria
         if (!empty($this->criteria)) {
-            return $this->checkCriteria($user, $this->criteria);
+            // Ensure criteria is an array
+            $criteria = is_array($this->criteria) ? $this->criteria : json_decode($this->criteria, true);
+
+            if (is_array($criteria)) {
+                return $this->checkCriteria($user, $criteria);
+            }
         }
 
         return true;
@@ -68,37 +84,37 @@ class Badge extends Model
                 case 'incidents_reported':
                     if ($user->incidents()->count() < $value) return false;
                     break;
-                    
+
                 case 'incidents_resolved':
                     if ($user->incidents()->where('status', 'resolved')->count() < $value) return false;
                     break;
-                    
+
                 case 'forum_topics':
                     if ($user->forumTopics()->count() < $value) return false;
                     break;
-                    
+
                 case 'forum_replies':
                     if ($user->forumReplies()->count() < $value) return false;
                     break;
-                    
+
                 case 'events_organized':
                     if ($user->organizedEvents()->count() < $value) return false;
                     break;
-                    
+
                 case 'events_attended':
                     if ($user->attendedEvents()->count() < $value) return false;
                     break;
-                    
+
                 case 'volunteer_applications':
                     if ($user->volunteerApplications()->count() < $value) return false;
                     break;
-                    
+
                 case 'total_points':
                     if ($user->points()->sum('points') < $value) return false;
                     break;
             }
         }
-        
+
         return true;
     }
 

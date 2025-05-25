@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\IncidentStatusUpdated;
 use App\Models\Incident;
 use App\Models\IncidentCategory;
+use App\Models\IncidentEvidence;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -545,5 +546,69 @@ class AdminDashboardController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    public function evidence(Request $request)
+    {
+        $query = IncidentEvidence::with(['incident.category', 'user']);
+
+        // Apply filters
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('verified')) {
+            $query->where('is_verified', $request->verified === 'yes');
+        }
+
+        if ($request->filled('incident_id')) {
+            $query->where('incident_id', $request->incident_id);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('content', 'like', "%{$search}%")
+                  ->orWhere('file_name', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('incident', function($incidentQuery) use ($search) {
+                      $incidentQuery->where('title', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $evidence = $query->latest()->paginate(20);
+        $incidents = Incident::select('id', 'title')->orderBy('title')->get();
+
+        return view('admin.evidence', compact('evidence', 'incidents'));
+    }
+
+    public function verifyEvidence(IncidentEvidence $evidence)
+    {
+        $evidence->update(['is_verified' => !$evidence->is_verified]);
+
+        $status = $evidence->is_verified ? 'verified' : 'unverified';
+        return response()->json([
+            'success' => true,
+            'message' => "Evidence {$status} successfully!",
+            'is_verified' => $evidence->is_verified
+        ]);
+    }
+
+    public function deleteEvidence(IncidentEvidence $evidence)
+    {
+        // Delete file if it exists
+        if ($evidence->file_path) {
+            Storage::disk('public')->delete($evidence->file_path);
+        }
+
+        $evidence->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Evidence deleted successfully!'
+        ]);
     }
 }
