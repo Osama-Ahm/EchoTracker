@@ -233,6 +233,16 @@
             <form method="POST" action="{{ route('register') }}">
                 @csrf
 
+                @if(session('user_type') === 'authority')
+                    <input type="hidden" name="user_type" value="authority">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        You're registering as an Environmental Authority. After registration, you'll need to complete your authority profile.
+                    </div>
+                @else
+                    <input type="hidden" name="user_type" value="user">
+                @endif
+
                 @if ($errors->any())
                     <div class="alert alert-danger">
                         <i class="bi bi-exclamation-triangle me-2"></i>
@@ -311,3 +321,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Providers\RouteServiceProvider;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
 
 class RegisterController extends Controller
 {
@@ -52,6 +54,7 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'user_type' => ['required', 'string', 'in:user,authority'],
         ]);
     }
 
@@ -63,10 +66,68 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'role' => $data['user_type'],
         ]);
+        
+        if ($data['user_type'] === 'authority') {
+            // Store in session that user needs to complete authority setup
+            session(['needs_authority_setup' => true]);
+        }
+        
+        return $user;
+    }
+
+    /**
+     * The user has been registered.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  mixed  $user
+     * @return mixed
+     */
+    protected function registered(Request $request, $user)
+    {
+        if ($user->role === 'authority' && session('needs_authority_setup')) {
+            session()->forget('needs_authority_setup');
+            return redirect()->route('authorities.setup');
+        }
+        
+        return redirect($this->redirectTo);
+    }
+
+    /**
+     * Show the user type selection form.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showTypeSelection()
+    {
+        return view('auth.register-type');
+    }
+
+    /**
+     * Process the user type selection.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function processTypeSelection(Request $request)
+    {
+        $request->validate([
+            'user_type' => 'required|in:user,authority',
+        ]);
+        
+        // Store the selected user type in the session
+        session(['user_type' => $request->user_type]);
+        
+        // Redirect to the registration form
+        return redirect()->route('register');
     }
 }
+
+
+
+

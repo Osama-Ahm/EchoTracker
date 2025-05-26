@@ -112,6 +112,16 @@
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(45, 90, 39, 0.1);
             box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+            padding: 0.75rem 1rem; /* Add consistent padding */
+        }
+
+        .navbar-nav {
+            align-items: center; /* Align items vertically */
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
         }
 
         .nav-link {
@@ -119,6 +129,21 @@
             transition: all 0.3s ease;
             border-radius: 20px;
             margin: 0 5px;
+            padding: 0.5rem 1rem; /* Consistent padding for all nav links */
+            display: flex;
+            align-items: center;
+        }
+
+        /* Ensure dropdown toggles are aligned */
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Align icons in nav items */
+        .nav-link i {
+            margin-right: 0.25rem;
+            font-size: 1.1rem;
         }
 
         .nav-link:hover {
@@ -155,16 +180,22 @@
         }
 
         .navbar .dropdown {
-            position: static;
+            position: relative; /* Change from static to relative */
         }
 
         .navbar .dropdown-menu {
             position: absolute !important;
             z-index: 9999 !important;
             top: 100% !important;
-            right: 15px !important;
-            left: auto !important;
+            left: 0 !important; /* Default to left alignment */
+            right: auto !important;
             transform: none !important;
+        }
+
+        /* User dropdown specific positioning */
+        .navbar-nav.ms-auto .dropdown-menu {
+            right: 0 !important;
+            left: auto !important;
         }
 
         .navbar .dropdown-menu.show {
@@ -466,6 +497,18 @@
                 font-size: 14px;
             }
         }
+
+        /* Community dropdown specific styles */
+        .community-dropdown {
+            min-width: 200px !important;
+            width: auto !important;
+            padding: 0.5rem 0;
+        }
+
+        .community-dropdown .dropdown-item {
+            padding: 0.5rem 1.25rem;
+            white-space: nowrap;
+        }
     </style>
 
 
@@ -505,7 +548,7 @@
                             </li>
 
                             <!-- Community Dropdown -->
-                            <li class="nav-item dropdown">
+                            <li class="nav-item dropdown community-dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bi bi-people me-1"></i>Community
                                 </a>
@@ -617,18 +660,11 @@
                         dropdownMenu.style.position = 'absolute';
                         dropdownMenu.style.zIndex = '9999';
                         dropdownMenu.style.top = '100%';
-                        dropdownMenu.style.left = 'auto';
+                        
+                        // Position dropdown relative to its parent instead of fixed right value
+                        dropdownMenu.style.right = 'auto';
+                        dropdownMenu.style.left = '0';
                         dropdownMenu.style.transform = 'none';
-
-                        // Responsive positioning
-                        const screenWidth = window.innerWidth;
-                        if (screenWidth >= 1200) {
-                            dropdownMenu.style.right = '20px';
-                        } else if (screenWidth >= 768) {
-                            dropdownMenu.style.right = '15px';
-                        } else {
-                            dropdownMenu.style.right = '10px';
-                        }
                     }
                 });
 
@@ -813,5 +849,35 @@
     </script>
 
     @stack('scripts')
+
+    // Add this script at the bottom of the file, before the closing </body> tag
+    document.addEventListener('DOMContentLoaded', function() {
+        // Force correct positioning for the Community dropdown
+        const communityDropdown = document.querySelector('.nav-item.dropdown a[data-bs-toggle="dropdown"]:has(.bi-people)');
+        if (communityDropdown) {
+            const dropdownInstance = new bootstrap.Dropdown(communityDropdown, {
+                reference: 'parent',
+                popperConfig: {
+                    placement: 'bottom-start',
+                    modifiers: [
+                        {
+                            name: 'preventOverflow',
+                            options: {
+                                boundary: 'viewport'
+                            }
+                        }
+                    ]
+                }
+            });
+            
+            // Destroy and recreate dropdown to apply new settings
+            communityDropdown.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropdownInstance.toggle();
+            });
+        }
+    });
 </body>
 </html>
+

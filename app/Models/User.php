@@ -122,9 +122,24 @@ class User extends Authenticatable
             ->get();
     }
 
+    /**
+     * Check if the user is an admin.
+     *
+     * @return bool
+     */
     public function isAdmin()
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * Check if the user is an authority.
+     *
+     * @return bool
+     */
+    public function isAuthority()
+    {
+        return $this->role === 'authority';
     }
 
     public function followedIncidents()
@@ -143,4 +158,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(VolunteerOpportunity::class, 'created_by');
     }
+
+    /**
+     * Get the authority associated with the user.
+     */
+    public function authority()
+    {
+        return $this->belongsTo(Authority::class);
+    }
 }
+
+
+

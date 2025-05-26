@@ -23,6 +23,23 @@ Route::get('/landing', function () {
 
 Auth::routes();
 
+// Add this in the auth routes section
+Route::get('/register/type', [App\Http\Controllers\Auth\RegisterController::class, 'showTypeSelection'])
+    ->name('register.type');
+Route::post('/register/type', [App\Http\Controllers\Auth\RegisterController::class, 'processTypeSelection'])
+    ->name('register.type.process');
+
+// Modify the existing register route to redirect to type selection
+Route::get('/register', function() {
+    // If user_type is already set in session, proceed to registration
+    if (session()->has('user_type')) {
+        return app()->make('App\Http\Controllers\Auth\RegisterController')->showRegistrationForm();
+    }
+    
+    // Otherwise redirect to type selection
+    return redirect()->route('register.type');
+})->name('register');
+
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -137,4 +154,22 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{reply}', [ForumController::class, 'deleteReply'])->name('delete');
         });
     });
+
+    // Authorities Portal Routes
+    Route::middleware(['auth', 'authority.access'])->prefix('authorities')->name('authorities.')->group(function () {
+        Route::get('/', [App\Http\Controllers\AuthoritiesPortalController::class, 'dashboard'])->name('dashboard');
+        Route::get('/incidents', [App\Http\Controllers\AuthoritiesPortalController::class, 'incidents'])->name('incidents');
+        Route::get('/incidents/{incident}', [App\Http\Controllers\AuthoritiesPortalController::class, 'showIncident'])->name('incidents.show');
+        Route::post('/incidents/{incident}/comment', [App\Http\Controllers\AuthoritiesPortalController::class, 'addComment'])->name('incidents.comment');
+        Route::get('/settings', [App\Http\Controllers\AuthoritiesPortalController::class, 'settings'])->name('settings');
+        Route::post('/settings', [App\Http\Controllers\AuthoritiesPortalController::class, 'updateSettings'])->name('settings.update');
+    });
+
+    // Authority Setup for new authority users
+    Route::middleware(['auth'])->get('/authorities/setup', [App\Http\Controllers\AuthoritySetupController::class, 'setup'])->name('authorities.setup');
+    Route::middleware(['auth'])->post('/authorities/setup', [App\Http\Controllers\AuthoritySetupController::class, 'store'])->name('authorities.setup.store');
 });
+
+
+
+
